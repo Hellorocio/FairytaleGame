@@ -3,12 +3,14 @@ using System.Collections;
 
 public class MovementScript : MonoBehaviour 
 {
-	private int currentRoom = 0;
+	public int currentRoom;
 	public GameObject[] rooms;
 
 	RoomScript roomScript;
 	PlayerScript playerScript;
 	ItemScript itemScript;
+
+	private bool talking = false; //true if talking to NPC, turns off inspection & moving
 
 	// Use this for initialization
 	void Start () 
@@ -21,16 +23,25 @@ public class MovementScript : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-	
 	}
 
 	//switches currentRoom to roomNum & moves player to startPosition[oldroom] 
 	public void ChangeRoom (int roomNum)
 	{
 		int oldRoom = currentRoom;
+
+		if (currentRoom == roomNum)
+		{
+			oldRoom = 0;
+		}
+
 		currentRoom = roomNum;
 		roomScript = rooms [currentRoom].GetComponent<RoomScript>();
-		PlayerMove(roomScript.startPositions[oldRoom]);
+
+		if (roomScript.startPositions.Length > oldRoom)
+		{
+			PlayerMove(roomScript.startPositions[oldRoom]);
+		}
 
 
 		roomScript.EnterRoom (true);
@@ -45,13 +56,21 @@ public class MovementScript : MonoBehaviour
 		playerScript.SetPromptText ("", false);
 	}
 
-	//moves player to item and shows descriptive text
-	public void InspectItem (GameObject item)
+	//moves player to item and shows descriptive text, adds item to inventory if pickup
+	public void InspectItem (GameObject item, bool pickup)
 	{
-		itemScript = item.GetComponent<ItemScript>();
-		playerScript.SetPromptText (itemScript.description, true);
+		if (!talking)
+		{
+			itemScript = item.GetComponent<ItemScript>();
+			playerScript.SetPromptText (itemScript.description, true);
 
-		PlayerMove (itemScript.playerLocation);
+			PlayerMove (itemScript.playerLocation);
+
+			if (pickup)
+			{
+				SendMessage("AddInventoryItem", item);
+			}
+		}
 	}
 
 	public void PlayerMove (Vector3 location)
@@ -64,5 +83,12 @@ public class MovementScript : MonoBehaviour
 		{
 			gameObject.transform.Rotate(0, 180, 0);
 		}
+	}
+
+	//prevents player from moving
+	public void StopMoving (bool set)
+	{
+		roomScript.clickPlaces.SetActive(!set);
+		talking = set;
 	}
 }

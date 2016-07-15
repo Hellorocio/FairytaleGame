@@ -13,6 +13,10 @@ public class BackpackScript : MonoBehaviour
 	ItemScript itemScript;
 	private int selectedThing = 0;
 
+	//"use" button things for special items
+	public GameObject book;
+
+
 	// Use this for initialization
 	void Start () 
 	{
@@ -25,10 +29,13 @@ public class BackpackScript : MonoBehaviour
 	}
 
 	// open/close backpack
-	public void SetBackpack(bool set)
+	public void SetBackpack (bool set)
 	{
 		//enable or disable button
 		openButton.SetActive (!set);
+
+		//enable or disable player movement
+		gameObject.SendMessage ("StopMoving", set);
 			
 		//set inventory
 		for (int i = 0; i < 6; i++)
@@ -45,6 +52,7 @@ public class BackpackScript : MonoBehaviour
 				inventoryStuff[i].SetActive(false);
 			}
 		}
+		useButton.SetActive (false);
 		backpack.SetActive (set);
 
 		if (!set)
@@ -59,12 +67,31 @@ public class BackpackScript : MonoBehaviour
 		GameObject item = (GameObject)PlayerStats.game.inventory[itemNum];
 		itemScript = item.GetComponent<ItemScript> ();
 		playerScript.SetPromptText (itemScript.description, false);
+		if (itemScript.useNum != 0)
+		{
+			useButton.SetActive(true);
+		}
+		else
+		{
+			useButton.SetActive(false);
+		}
 	}
 
-	//uses item if usable, not implemented yet
+	//uses item if usable
 	public void UseInventoryItem ()
 	{
-		print ("pressed use");
+		if (selectedThing >= 0)
+		{
+			switch (itemScript.useNum)
+			{
+			//open book
+			case 1:
+				book.SetActive(true);
+				SetBackpack(false);
+				gameObject.SendMessage ("StopMoving", true);
+				break;
+			}
+		}
 	}
 
 	//if we need to drop things, nothing uses this yet

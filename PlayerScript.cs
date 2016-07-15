@@ -8,6 +8,7 @@ public class PlayerScript : MonoBehaviour
 	public GameObject prompt;
 	private bool showTimedText = false;
 	private float timer = 0f;
+	
 
 	// Use this for initialization
 	void Start () 
@@ -39,6 +40,21 @@ public class PlayerScript : MonoBehaviour
 			timer = 0f;
 			showTimedText = true;
 		}
+	}
+
+	//Adds strings to savestuff list, makes sure there aren't repeats
+	public void SetSaveStuff (string set)
+	{
+		if (!HasSaveStuff(set))
+		{
+			PlayerStats.game.saveStuff.Add(set);
+		}
+	}
+	
+	//true is thing is in game version of savestuff
+	public bool HasSaveStuff (string thing)
+	{
+		return PlayerStats.game.saveStuff.Contains (thing);
 	}
 
 }
